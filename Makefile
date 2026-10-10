@@ -4,6 +4,5 @@ build: burrow.c
 run: burrow
 	./burrow
 
-
 clean:
 	rm burrow
