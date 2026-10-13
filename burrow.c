@@ -20,7 +20,7 @@ void enableRawMode() {
 }
 //
 
-int selection_list(const char question[], const char *options[], int option_count) {
+int selection_list(const char question[], char *options[], int option_count) {
     int selected_option_index = 0;
 
     enableRawMode();
@@ -32,7 +32,7 @@ int selection_list(const char question[], const char *options[], int option_coun
             if (i == selected_option_index) {
                 printf("> \033[1m%s\033[0m\n", options[i]);
             } else {
-                printf("- %s\n", options[i]);
+                printf("  %s\n", options[i]);
             }
         }
 
@@ -49,6 +49,8 @@ int selection_list(const char question[], const char *options[], int option_coun
             // Go down one folder
         } else if (input_char == 'a' || arrow_key_char == 'D') {
             // Go up one folder
+        } else if (input_char == '\n') {
+            break;
         }
 
         printf("\033[%dA\r\033[K", option_count + 1);
@@ -56,21 +58,19 @@ int selection_list(const char question[], const char *options[], int option_coun
 
     disableRawMode();
 
-    return 0;
+    return selected_option_index;
 }
 
 int main() {
-    const char *options[] = {
-        "file1",
-        "file2",
-        "file3"
-    };
-    // selection_list("How are you doing?", options, sizeof(options)/sizeof(options[0]));
+    // Initalize file list memory
+    int count = 0;
+    int capacity = 8;
+    char **files = malloc(capacity * sizeof(char *));
 
-    // Get CWD and its content
+    // Get CWD
     char *cwd = getcwd(NULL, 0);
-    printf("Current Working Directory: %s\n", cwd);
 
+    // Get CWD content into array
     DIR *dir = opendir(cwd);
     if (dir == NULL) {
         printf("Error when reading entries in current directory");
@@ -83,10 +83,25 @@ int main() {
         if (strcmp(entry_name, ".") == 0 || strcmp(entry_name, "..") == 0) {
             continue;
         }
-
-        printf("%s%c\n", entry_name, isFolder ? '/' : ' ');
+        if (count >= capacity) {
+            capacity *= 2;
+            files = realloc(files, capacity * sizeof(char *));
+        }
+        char entry_name_buffer[512];
+        snprintf(entry_name_buffer, sizeof(entry_name_buffer), "%s%c", entry_name, isFolder ? '/' : ' ');
+        files[count] = strdup(entry_name_buffer);
+        count += 1;
     }
 
+    // File selection
+    int selected_index = selection_list(cwd, files, count);
+    printf("%s\n", files[selected_index]);
+
+    // Memory freeing
+    for (int i = 0; i < count; i++) {
+        free(files[i]);
+    }
+    free(files);
     closedir(dir);
     free(cwd);
 
