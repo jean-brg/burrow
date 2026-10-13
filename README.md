@@ -7,4 +7,5 @@ Below are the controls on how to navigate when burrowing:
 - `s` / `down_arrow`: Move selection cursor down
 - `d` / `right_arrow`: Move into selected folder
 - `a` / `left_arrow`: Move out of current folder
-- `enter`: Return the current folder path or current selected file path
+- `enter`: Return the currently selected file or folder
+- `.`: Return the currently open folder
